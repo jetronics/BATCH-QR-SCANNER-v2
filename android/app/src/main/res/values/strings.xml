@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Batch QR Scanner</string>
+    <string name="title_activity_main">Batch QR Scanner</string>
+    <string name="package_name">com.batchqr.scanner</string>
+    <string name="custom_url_scheme">com.batchqr.scanner</string>
+</resources>

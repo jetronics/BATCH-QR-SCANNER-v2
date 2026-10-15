@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F4F6F9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1019" media="(prefers-color-scheme: dark)">
+<title>Batch QR Scanner</title>
+<link rel="icon" href="icon.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-qr" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2.5v2.5H14zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5"/></symbol>
+    <symbol id="i-flip" viewBox="0 0 24 24"><path d="M20 7h-9a4 4 0 0 0-4 4v1"/><path d="M17 4l3 3-3 3"/><path d="M4 17h9a4 4 0 0 0 4-4v-1"/><path d="M7 20l-3-3 3-3"/></symbol>
+    <symbol id="i-flash" viewBox="0 0 24 24"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6L13 3z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+
+  <header class="top">
+    <img class="logo" src="icon.png" alt="" width="40" height="40">
+    <div class="titles">
+      <h1>Batch QR Scanner</h1>
+      <p>Scan many codes, copy them as one list</p>
+    </div>
+    <span class="pill" id="pill" data-state="idle"><i></i><span id="pillText">Camera off</span></span>
+  </header>
+
+  <section class="card scanner" aria-label="Scanner">
+    <div class="viewport" id="viewport" data-state="idle">
+      <video id="video" playsinline muted></video>
+
+      <div class="reticle" aria-hidden="true">
+        <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+        <span class="sweep"></span>
+      </div>
+
+      <div class="placeholder" id="placeholder">
+        <span class="ph-icon"><svg class="ico"><use href="#i-camera"/></svg></span>
+        <strong id="phTitle">Camera is off</strong>
+        <span id="phText">Start scanning to capture codes one after another.</span>
+      </div>
+
+      <div class="chip" id="chip" role="status" aria-live="polite" hidden><i></i><span id="chipText"></span></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn primary grow" id="toggleBtn" type="button">
+        <svg class="ico"><use href="#i-camera"/></svg><span>Start scanning</span>
+      </button>
+      <button class="btn icon" id="torchBtn" type="button" aria-label="Toggle flashlight" aria-pressed="false" hidden>
+        <svg class="ico"><use href="#i-flash"/></svg>
+      </button>
+      <button class="btn icon" id="switchBtn" type="button" aria-label="Switch camera" disabled>
+        <svg class="ico"><use href="#i-flip"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section class="card results" aria-label="Scanned codes">
+    <div class="results-head">
+      <h2>Scanned codes</h2>
+      <span class="badge" id="count">0</span>
+      <label class="switch" for="dedupe">
+        <span>Skip duplicates</span>
+        <input type="checkbox" id="dedupe" role="switch" checked>
+        <i class="track"><i class="thumb"></i></i>
+      </label>
+    </div>
+
+    <ul class="list" id="list"></ul>
+
+    <div class="empty" id="empty">
+      <span class="ph-icon"><svg class="ico"><use href="#i-qr"/></svg></span>
+      <strong>No codes yet</strong>
+      <span>Codes you scan will appear here.</span>
+    </div>
+
+    <footer class="actions">
+      <button class="btn primary grow" id="copyBtn" type="button" disabled>
+        <svg class="ico"><use href="#i-copy"/></svg><span id="copyLabel">Copy all</span>
+      </button>
+      <button class="btn ghost-danger" id="clearBtn" type="button" disabled>
+        <svg class="ico"><use href="#i-trash"/></svg><span>Clear</span>
+      </button>
+    </footer>
+  </section>
+</div>
+
+<dialog id="confirm" aria-labelledby="confirmTitle">
+  <form method="dialog">
+    <h3 id="confirmTitle">Clear all codes?</h3>
+    <p id="confirmText">This removes every scanned code from the list.</p>
+    <div class="dialog-actions">
+      <button class="btn" value="cancel" type="submit">Cancel</button>
+      <button class="btn danger" value="ok" type="submit" id="confirmOk">Clear all</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="vendor/jsQR.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
