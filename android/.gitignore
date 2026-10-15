@@ -1,0 +1,11 @@
+node_modules/
+.DS_Store
+*.log
+
+# Android build output (android/.gitignore covers the rest)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.keystore
+*.jks
